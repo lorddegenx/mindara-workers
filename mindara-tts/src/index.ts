@@ -11,7 +11,7 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-import { TTSRequest, NeetsTTSResponse, TTSResponse, Env } from './types';
+import { TTSRequest, TTSResponse, Env } from './types';
 
 const NEETS_API_URL = 'https://api.neets.ai/v1/tts';
 
@@ -48,7 +48,7 @@ export default {
 						const response = await fetch(NEETS_API_URL, {
 							method: 'POST',
 							headers: {
-								'Accept': 'audio/wav',
+								'Accept': 'audio/mp3',
 								'Content-Type': 'application/json',
 								'X-API-Key': env.NEETS_API_KEY,
 							},
@@ -67,17 +67,20 @@ export default {
 							throw new Error(`Neets API error: ${response.statusText}`);
 						}
 
-						const neetResponse: NeetsTTSResponse = await response.json();
+						const audioBuffer = await response.arrayBuffer();
+						const audio_data = btoa(
+							String.fromCharCode(...new Uint8Array(audioBuffer))
+						);
 						
 						return {
 							index: affirmation.index,
-							audio_url: neetResponse.audio_url,
+							audio_data,
 						};
 					} catch (error) {
-						// Return error for this specific affirmation but continue processing others
+						console.error('Affirmation processing error:', error);
 						return {
 							index: affirmation.index,
-							audio_url: '',
+							audio_data: '',
 							error: error instanceof Error ? error.message : 'TTS conversion failed',
 						};
 					}

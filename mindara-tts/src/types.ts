@@ -6,14 +6,10 @@ export interface TTSRequest {
   voiceId: string;
 }
 
-export interface NeetsTTSResponse {
-  audio_url: string;  // Assuming Neets.ai returns a URL
-}
-
 export interface TTSResponse {
   results: {
     index: number;
-    audio_url: string;
+    audio_data: string; // Base64 encoded audio
     error?: string;
   }[];
 }
